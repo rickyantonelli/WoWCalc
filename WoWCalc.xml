@@ -53,5 +53,10 @@
                     x="0"
                     y="-30" />
         </Anchors>
+        <Scripts>
+            <OnChar>
+                WoWCalcEditBox_OnChar(self);
+            </OnChar>
+        </Scripts>
     </EditBox>
 </Ui>
