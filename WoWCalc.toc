@@ -1,0 +1,8 @@
+## Interface: 11403
+## Title: WoW Calculator
+## Notes: An interactive calculator 
+## Author: Scenic
+## Version: 1.0
+
+WoWCalc.xml
+WoWCalc.lua
