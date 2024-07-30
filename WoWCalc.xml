@@ -1,40 +1,57 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-
-    <Frame name="WoWCalcFrame" parent="UIParent" hidden="true" movable="true" enableMouse="true">
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <Frame name="WoWCalcFrame"
+           parent="UIParent"
+           hidden="true"
+           movable="true"
+           enableMouse="true">
         <Size>
-            <AbsDimension x="384" y="512"/>
+            <AbsDimension x="384"
+                          y="512" />
         </Size>
         <Anchors>
-            <Anchor point="CENTER"/>
+            <Anchor point="CENTER" />
         </Anchors>
         <Layers>
             <Layer level="BACKGROUND">
-                <Texture name="$parentBackground" setAllPoints="true">
-                    <Color r="0" g="0" b="0" a="0.7"/>
+                <Texture name="$parentBackground"
+                         setAllPoints="true">
+                    <Color r="0"
+                           g="0"
+                           b="0"
+                           a="0.7" />
                 </Texture>
             </Layer>
         </Layers>
         <Frames>
-            <Button name="$parent_Close" parentKey="close" inherits="UIPanelCloseButton">
-              <Anchors>
-                <Anchor point="TOPRIGHT">
-                </Anchor>
-              </Anchors>
+            <Button name="$parent_Close"
+                    parentKey="close"
+                    inherits="UIPanelCloseButton">
+                <Anchors>
+                    <Anchor point="TOPRIGHT" />
+                </Anchors>
             </Button>
         </Frames>
         <Scripts>
-            <OnShow>
+            <OnShow>                
                 print("loading");
                 WoWCalc_OnShow(self);
             </OnShow>
         </Scripts>
     </Frame>
-    <EditBox name="$parentEditBox" parent="WoWCalcFrame" parentKey="editBox" inherits="InputBoxTemplate" autoFocus="false">
-        <Size x="180" y="30"/>
+    <EditBox name="$parentEditBox"
+             parent="WoWCalcFrame"
+             parentKey="editBox"
+             inherits="InputBoxTemplate"
+             autoFocus="false">
+        <Size x="180"
+              y="30" />
         <Anchors>
-            <Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
+            <Anchor point="TOP"
+                    relativePoint="TOP"
+                    x="0"
+                    y="-30" />
         </Anchors>
     </EditBox>
 </Ui>
