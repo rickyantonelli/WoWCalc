@@ -4,5 +4,5 @@
 ## Author: Scenic
 ## Version: 1.0
 
-WoWCalc.xml
 WoWCalc.lua
+WoWCalc.xml

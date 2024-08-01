@@ -8,9 +8,9 @@ local buttonMappings = {
     {"+/-", 0, "."}
 }
 
-local operatorSymbols = {"+", "-", "/", "x", "="}
+local OPERATORSYMBOLS = {"+", "-", "/", "x", "="}
 
-local operators = {
+local OPERATORS = {
     ["+"] = function(a,b)
         return a + b
     end,
@@ -28,8 +28,10 @@ local operators = {
     end
 }
 
-function WoWCalc_OnShow(self)
-    self:Show()
+function WoWCalc_OnLoad(self)
+    -- set this as a global variable that we can use
+    WoWCalcFrame = self
+
     self:RegisterForDrag("LeftButton")
     self:SetScript("OnDragStart", self.StartMoving)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
@@ -42,28 +44,27 @@ function WoWCalc_OnShow(self)
     local startX = 100
     local startY = -150
 
+    -- create number buttons
     for rowIndex, row in ipairs(buttonMappings) do
         for colIndex, buttonID in ipairs(row) do
-            --print(buttonID)
             local offsetX = startX + (colIndex - 1) * (buttonSize + spacing)
             local offsetY = startY - (rowIndex - 1) * (buttonSize + spacing)
             if buttonID then
                 local button = CreateFrame("Button", "WoWCalcButton" .. buttonID, self, "UIPanelButtonTemplate")
                 button:SetSize(34, 34)
-                button:SetText(buttonID)
+                button:SetText(tostring(buttonID))
                 button.type = "Number"
                 button:SetScript("OnClick", function(self)
                     WoWCalcFrameValueButton_OnClick(self, buttonID)
                 end)
                 button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
                 self.numberButtons[tostring(buttonID)] = button -- store the button
-                print(self.numberButtons["7"]:GetText())
             end
         end
     end
 
     -- Create operation buttons
-    for index, buttonID in ipairs(operatorSymbols) do
+    for index, buttonID in ipairs(OPERATORSYMBOLS) do
         local operatorX = startX + 3 * (buttonSize + spacing) + spacing
         local button = CreateFrame("Button", "WoWCalcButton" .. buttonID, self, "UIPanelButtonTemplate")
         local offsetY = startY - (index - 1) * (buttonSize + spacing)
@@ -77,8 +78,10 @@ function WoWCalc_OnShow(self)
     end
 
     -- self.editBox.SetScript("OnTextChanged")
-    
-    -- set the edit box to display 0
+end
+
+function WoWCalc_OnShow(self)
+    -- initialize the edit box properties
     self.editBox.firstValue = 0
     self.editBox.secondValue = 0
     self.editBox.lastDigit = ""
@@ -133,7 +136,7 @@ function WoWCalcFrameOperatorButton_OnClick(self, buttonID)
         editBox.secondValue = tonumber(editBox:GetText())
 
         -- first, calculate the last set of things
-        local result = operators[editBox.lastOperator](editBox.firstValue, editBox.secondValue)
+        local result = OPERATORS[editBox.lastOperator](editBox.firstValue, editBox.secondValue)
         editBox:SetText(result)
         editBox.currentText = result
         editBox.firstValue = result
@@ -173,7 +176,20 @@ function Contains(table, element)
     return false
 end
 
+function WoWCalc_SlashCommandHandler(msg)
+    -- only command we have for now is to show the frame
+    if WoWCalcFrame:IsShown() then
+        print("Calculator is already opened!")
+        return
+    else
+        WoWCalcFrame:Show()
+    end
+end
 
-
+SLASH_WOWCALC1 = "/wc"
+SLASH_WOWCALC2 = "/WowCalc"
+SlashCmdList["WOWCALC"] = function(msg, editbox)
+    WoWCalc_SlashCommandHandler(msg)
+  end
 
 -- /run WoWCalcFrame:Show()

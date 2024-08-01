@@ -34,8 +34,11 @@
             </Button>
         </Frames>
         <Scripts>
-            <OnShow>                
+            <OnLoad>                
                 print("loading");
+                WoWCalc_OnLoad(self);
+            </OnLoad>
+            <OnShow>                
                 WoWCalc_OnShow(self);
             </OnShow>
         </Scripts>
