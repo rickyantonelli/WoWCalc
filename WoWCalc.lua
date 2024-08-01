@@ -32,6 +32,7 @@ function WoWCalc_OnLoad(self)
     -- set this as a global variable that we can use
     WoWCalcFrame = self
 
+    self:SetPropagateKeyboardInput(true) -- so that we dont consume the keyboard input (UI can still use)
     self:RegisterForDrag("LeftButton")
     self:SetScript("OnDragStart", self.StartMoving)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
@@ -77,6 +78,25 @@ function WoWCalc_OnLoad(self)
         self.numberButtons[buttonID] = button -- store the button
     end
 
+    -- lastly, make a clear button
+    do
+        local button = CreateFrame("Button", "WoWCalcButtonClear", self, "UIPanelButtonTemplate")
+        button:SetSize(80, 34)
+        button:SetText("CLEAR")
+        local operatorX = startX + 3 * (buttonSize + spacing) + spacing - 25
+        local offsetY = startY - (6 - 1) * (buttonSize + spacing) -- make index 6 so it goes below the equals
+        button:SetPoint("TOPLEFT", self, "TOPLEFT", operatorX, offsetY)
+        button.type = "Clear"
+
+        -- STOPPED HERE
+        button:SetScript("OnClick", function(self)
+            WoWCalcButtonClear_OnClick(self)
+        end)
+        -- store the clear button
+        self.clearButton = button
+    end
+
+
     -- self.editBox.SetScript("OnTextChanged")
 end
 
@@ -91,8 +111,20 @@ function WoWCalc_OnShow(self)
     
 end
 
+function WoWCalc_OnKeyDown(self, key)
+    if key == "ESCAPE" then
+        self:Hide()
+    elseif key == "ENTER" then
+        local button = self.numberButtons["="]
+        button:Click()
+        button:GetScript("OnMouseDown")(button)
+        C_Timer.After(0.1, function()
+            button:GetScript("OnMouseUp")(button)
+        end)
+    end
+end
+
 function WoWCalcFrameValueButton_OnClick(self, buttonID)
-    -- print("Button" .. buttonID ..  "clicked!")
     local editBox = self:GetParent().editBox
     local currentText = editBox:GetText()
     if currentText == "0" or editBox.lastDigit.type == "Operator" then
@@ -149,8 +181,6 @@ end
 function WoWCalcEditBox_OnChar(self)
     local char = string.sub(self:GetText(), -1)
     self:SetText(self.currentText)
-    print(type(char))
-    
 
     local button = self:GetParent().numberButtons[char]
     if button ~= nil then
@@ -165,15 +195,14 @@ function WoWCalcEditBox_OnChar(self)
     end  
 end
 
-
-function Contains(table, element)
-    for _, value in pairs(table) do
-        print(value)
-        if value == element then
-            return true
-        end
-    end
-    return false
+function WoWCalcButtonClear_OnClick(self)
+    local editBox = self:GetParent().editBox
+    editBox.firstValue = 0
+    editBox.secondValue = 0
+    editBox.lastDigit = ""
+    editBox.lastOperator = "+"
+    editBox.currentText = 0
+    editBox:SetText(0)
 end
 
 function WoWCalc_SlashCommandHandler(msg)
@@ -191,5 +220,15 @@ SLASH_WOWCALC2 = "/WowCalc"
 SlashCmdList["WOWCALC"] = function(msg, editbox)
     WoWCalc_SlashCommandHandler(msg)
   end
+
+function Contains(table, element)
+    for _, value in pairs(table) do
+        print(value)
+        if value == element then
+            return true
+        end
+    end
+    return false
+end
 
 -- /run WoWCalcFrame:Show()

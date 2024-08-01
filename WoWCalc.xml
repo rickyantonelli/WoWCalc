@@ -41,6 +41,9 @@
             <OnShow>                
                 WoWCalc_OnShow(self);
             </OnShow>
+            <OnKeyDown>                
+                WoWCalc_OnKeyDown(self, key);
+            </OnKeyDown>
         </Scripts>
     </Frame>
     <EditBox name="$parentEditBox"
