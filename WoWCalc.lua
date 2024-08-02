@@ -40,10 +40,10 @@ function WoWCalc_OnLoad(self)
     self.numberButtons = {}
     self.operatorButtons = {}
 
-    local spacing = 30
+    local spacing = 9
     local buttonSize = 34
-    local startX = 100
-    local startY = -150
+    local startX = 40
+    local startY = -75
 
     -- create number buttons
     for rowIndex, row in ipairs(buttonMappings) do
@@ -52,8 +52,10 @@ function WoWCalc_OnLoad(self)
             local offsetY = startY - (rowIndex - 1) * (buttonSize + spacing)
             if buttonID then
                 local button = CreateFrame("Button", "WoWCalcButton" .. buttonID, self, "UIPanelButtonTemplate")
-                button:SetSize(34, 34)
+                button:SetSize(40, 40)
                 button:SetText(tostring(buttonID))
+                button:SetNormalFontObject("GameFontNormalLarge")
+                button:SetHighlightFontObject("GameFontNormalLarge")
                 button.type = "Number"
                 button:SetScript("OnClick", function(self)
                     WoWCalcFrameValueButton_OnClick(self, buttonID)
@@ -66,26 +68,33 @@ function WoWCalc_OnLoad(self)
 
     -- Create operation buttons
     for index, buttonID in ipairs(OPERATORSYMBOLS) do
-        local operatorX = startX + 3 * (buttonSize + spacing) + spacing
+        local offsetX = startX + 3 * (buttonSize + spacing) + spacing
         local button = CreateFrame("Button", "WoWCalcButton" .. buttonID, self, "UIPanelButtonTemplate")
         local offsetY = startY - (index - 1) * (buttonSize + spacing)
-        button:SetPoint("TOPLEFT", self, "TOPLEFT", operatorX, offsetY)
-        button:SetText(buttonID)
-        button.type = "Operator"
-        button:SetScript("OnClick", function(self)
-            WoWCalcFrameOperatorButton_OnClick(self, buttonID)
-        end)
-        self.numberButtons[buttonID] = button -- store the button
+        if buttonID then
+            button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
+            button:SetText(buttonID)
+            button:SetSize(37, 37)
+            button:SetNormalFontObject("GameFontNormalLarge")
+            button:SetHighlightFontObject("GameFontNormalLarge")
+            button.type = "Operator"
+            button:SetScript("OnClick", function(self)
+                WoWCalcFrameOperatorButton_OnClick(self, buttonID)
+            end)
+            self.numberButtons[buttonID] = button -- store the button
+        end
     end
 
     -- lastly, make a clear button
     do
         local button = CreateFrame("Button", "WoWCalcButtonClear", self, "UIPanelButtonTemplate")
-        button:SetSize(80, 34)
+        button:SetSize(90, 34)
         button:SetText("CLEAR")
-        local operatorX = startX + 3 * (buttonSize + spacing) + spacing - 25
-        local offsetY = startY - (6 - 1) * (buttonSize + spacing) -- make index 6 so it goes below the equals
-        button:SetPoint("TOPLEFT", self, "TOPLEFT", operatorX, offsetY)
+        button:SetNormalFontObject("GameFontNormalLarge")
+        button:SetHighlightFontObject("GameFontNormalLarge")
+        local offsetX = startX + 3 * (buttonSize + spacing) + spacing - 115
+        local offsetY = startY - (5 - 1) * (buttonSize + spacing) -- make index 6 so it goes below the equals
+        button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
         button.type = "Clear"
 
         -- STOPPED HERE
@@ -102,6 +111,8 @@ end
 
 function WoWCalc_OnShow(self)
     -- initialize the edit box properties
+    -- self.editBox:SetTextInsets(50, 50, 50, 50)
+
     self.editBox.firstValue = 0
     self.editBox.secondValue = 0
     self.editBox.lastDigit = ""
@@ -115,6 +126,8 @@ function WoWCalc_OnKeyDown(self, key)
     if key == "ESCAPE" then
         self:Hide()
     elseif key == "ENTER" then
+        -- need to think about if we want to keep this
+        -- the current functionality is that it will calculate but also open the normal wow console
         local button = self.numberButtons["="]
         button:Click()
         button:GetScript("OnMouseDown")(button)
@@ -125,9 +138,11 @@ function WoWCalc_OnKeyDown(self, key)
 end
 
 function WoWCalcFrameValueButton_OnClick(self, buttonID)
+    -- handles all of the logic regarding pressing number buttons
     local editBox = self:GetParent().editBox
     local currentText = editBox:GetText()
     if currentText == "0" or editBox.lastDigit.type == "Operator" then
+        -- clear the editbox when we need to (when starting or after an operator)
         currentText = ""
         if editBox.lastOperator == "=" then
             editBox.firstValue = 0
@@ -151,16 +166,22 @@ function WoWCalcFrameValueButton_OnClick(self, buttonID)
             editBox.currentText = currentText .. buttonID
         end
     else
+        -- normal procedure, add to the edit box
         editBox:SetText(currentText .. buttonID)
         editBox.currentText = currentText .. buttonID
     end
+    -- store the last digit we pressed 
     editBox.lastDigit = self
     
 end
 
 function WoWCalcFrameOperatorButton_OnClick(self, buttonID)
+    -- handles all of the logic regarding pressing operator buttons
+    -- also handles all computation logic
     local editBox = self:GetParent().editBox
     if editBox.lastDigit.type == "Operator" then
+        -- if we had last hit an operator, then we dont want to do anything except change
+        -- what the operation will be
         editBox.lastOperator = buttonID
         editBox.lastDigit = self
     else
@@ -179,6 +200,10 @@ function WoWCalcFrameOperatorButton_OnClick(self, buttonID)
 end
 
 function WoWCalcEditBox_OnChar(self)
+    -- we obviously want to let the user type straight into the edit box, but we want to do it in a controlled way
+    -- instead of doubling up on the same logic/code as when clicking, we can just "ignore" the char that was pressed
+    -- and pass that in through a click event, but only if it matches a clickable button
+    -- this allows us to control everything better, and play button animations when typing
     local char = string.sub(self:GetText(), -1)
     self:SetText(self.currentText)
 
@@ -192,10 +217,26 @@ function WoWCalcEditBox_OnChar(self)
         print("we good")
     else
         print("not there")
-    end  
+    end
 end
 
+function WoWCalcEditBox_OnKeyDown(self, key)
+    -- all of the other key pressing handling lives in WoWCalcEditBox_OnChar
+    -- so we just handle the enter key here
+    -- no need to check for focus, since this lives in the edit box
+    if key == "ENTER" then
+        local button = self:GetParent().numberButtons["="]
+        button:Click()
+        button:GetScript("OnMouseDown")(button)
+        C_Timer.After(0.1, function()
+            button:GetScript("OnMouseUp")(button)
+        end)
+    end
+end
+
+
 function WoWCalcButtonClear_OnClick(self)
+    -- clear button pressed, reset everything
     local editBox = self:GetParent().editBox
     editBox.firstValue = 0
     editBox.secondValue = 0
@@ -230,5 +271,3 @@ function Contains(table, element)
     end
     return false
 end
-
--- /run WoWCalcFrame:Show()
