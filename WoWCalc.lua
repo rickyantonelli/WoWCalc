@@ -1,14 +1,13 @@
-print("lua file")
 
 -- set up to help properly space out button mappings
-local buttonMappings = {
+local BUTTONMAPPINGS = {
     {7, 8, 9},
     {4, 5, 6},
     {1, 2, 3},
     {"+/-", 0, "."}
 }
 
-local OPERATORSYMBOLS = {"+", "-", "/", "x", "="}
+local OPERATORSYMBOLS = {"+", "-", "/", "*", "="}
 
 local OPERATORS = {
     ["+"] = function(a,b)
@@ -19,7 +18,7 @@ local OPERATORS = {
         return a - b
     end,
 
-    ["x"] = function(a,b)
+    ["*"] = function(a,b)
         return a * b
     end,
 
@@ -38,7 +37,7 @@ function WoWCalc_OnLoad(self)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
 
     self.numberButtons = {}
-    self.operatorButtons = {}
+    self.savedVariables = {}
 
     local spacing = 9
     local buttonSize = 34
@@ -46,7 +45,7 @@ function WoWCalc_OnLoad(self)
     local startY = -75
 
     -- create number buttons
-    for rowIndex, row in ipairs(buttonMappings) do
+    for rowIndex, row in ipairs(BUTTONMAPPINGS) do
         for colIndex, buttonID in ipairs(row) do
             local offsetX = startX + (colIndex - 1) * (buttonSize + spacing)
             local offsetY = startY - (rowIndex - 1) * (buttonSize + spacing)
@@ -72,9 +71,19 @@ function WoWCalc_OnLoad(self)
         local button = CreateFrame("Button", "WoWCalcButton" .. buttonID, self, "UIPanelButtonTemplate")
         local offsetY = startY - (index - 1) * (buttonSize + spacing)
         if buttonID then
-            button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
-            button:SetText(buttonID)
-            button:SetSize(37, 37)
+            
+            if buttonID == "*" then
+                button:SetText("x")
+            else
+                button:SetText(buttonID)
+            end
+            if buttonID == "=" then
+                button:SetSize(80, 40)
+                button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX - 39, offsetY)
+            else
+                button:SetSize(40, 40)
+                button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
+            end
             button:SetNormalFontObject("GameFontNormalLarge")
             button:SetHighlightFontObject("GameFontNormalLarge")
             button.type = "Operator"
@@ -88,11 +97,11 @@ function WoWCalc_OnLoad(self)
     -- lastly, make a clear button
     do
         local button = CreateFrame("Button", "WoWCalcButtonClear", self, "UIPanelButtonTemplate")
-        button:SetSize(90, 34)
+        button:SetSize(90, 40)
         button:SetText("CLEAR")
         button:SetNormalFontObject("GameFontNormalLarge")
         button:SetHighlightFontObject("GameFontNormalLarge")
-        local offsetX = startX + 3 * (buttonSize + spacing) + spacing - 115
+        local offsetX = startX + 3 * (buttonSize + spacing) + spacing - 137
         local offsetY = startY - (5 - 1) * (buttonSize + spacing) -- make index 6 so it goes below the equals
         button:SetPoint("TOPLEFT", self, "TOPLEFT", offsetX, offsetY)
         button.type = "Clear"
@@ -105,13 +114,14 @@ function WoWCalc_OnLoad(self)
         self.clearButton = button
     end
 
+    --self.editBox.SetPoint()
+
 
     -- self.editBox.SetScript("OnTextChanged")
 end
 
 function WoWCalc_OnShow(self)
     -- initialize the edit box properties
-    -- self.editBox:SetTextInsets(50, 50, 50, 50)
 
     self.editBox.firstValue = 0
     self.editBox.secondValue = 0
@@ -214,15 +224,12 @@ function WoWCalcEditBox_OnChar(self)
         C_Timer.After(0.1, function()
             button:GetScript("OnMouseUp")(button)
         end)
-        print("we good")
-    else
-        print("not there")
     end
 end
 
 function WoWCalcEditBox_OnKeyDown(self, key)
-    -- all of the other key pressing handling lives in WoWCalcEditBox_OnChar
-    -- so we just handle the enter key here
+    -- most of the other key pressing handling lives in WoWCalcEditBox_OnChar
+    -- so here we just handle enter, escape, and the asterisk (since multiply is bound to x)
     -- no need to check for focus, since this lives in the edit box
     if key == "ENTER" then
         local button = self:GetParent().numberButtons["="]
@@ -231,9 +238,22 @@ function WoWCalcEditBox_OnKeyDown(self, key)
         C_Timer.After(0.1, function()
             button:GetScript("OnMouseUp")(button)
         end)
+    elseif key == "ESCAPE" then
+        local button = self:GetParent().clearButton
+        button:Click()
+        button:GetScript("OnMouseDown")(button)
+        C_Timer.After(0.1, function()
+            button:GetScript("OnMouseUp")(button)
+        end)
+    elseif key == "X" then
+        local button = self:GetParent().numberButtons["*"]
+        button:Click()
+        button:GetScript("OnMouseDown")(button)
+        C_Timer.After(0.1, function()
+            button:GetScript("OnMouseUp")(button)
+        end)
     end
 end
-
 
 function WoWCalcButtonClear_OnClick(self)
     -- clear button pressed, reset everything

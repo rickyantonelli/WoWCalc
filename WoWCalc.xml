@@ -10,8 +10,8 @@
            movable="true"
            enableMouse="true">
         <Size>
-            <AbsDimension x="250"
-                          y="300" />
+            <AbsDimension x="500"
+                          y="350" />
         </Size>
         <Anchors>
             <Anchor point="CENTER" />
@@ -57,9 +57,9 @@
         <Size x="150"
               y="30" />
         <Anchors>
-            <Anchor point="TOP"
-                    relativePoint="TOP"
-                    x="0"
+            <Anchor point="TOPLEFT"
+                    relativePoint="TOPLEFT"
+                    x="50"
                     y="-30" />
         </Anchors>
         <FontString inherits="GameFontHighlightLarge"/>
@@ -67,9 +67,6 @@
             <OnChar>
                 WoWCalcEditBox_OnChar(self);
             </OnChar>
-            <OnLoad>
-                WoWCalcEditBox_OnLoad(self);
-            </OnLoad>
             <OnKeyDown>                
                 WoWCalcEditBox_OnKeyDown(self, key);
             </OnKeyDown>
