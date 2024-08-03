@@ -36,8 +36,19 @@ function WoWCalc_OnLoad(self)
     self:SetScript("OnDragStart", self.StartMoving)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
 
+    local backdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
+    backdrop:SetPoint("TOPLEFT", self, "TOPLEFT", 35, -73)
+    backdrop:SetSize(190, 220)
+    backdrop:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+    })
+    backdrop:SetBackdropColor(0, 0, 0, 0)
+
     self.numberButtons = {}
-    self.savedVariables = {}
+    self.savedVariableButtons = {}
 
     local spacing = 9
     local buttonSize = 34
@@ -96,7 +107,7 @@ function WoWCalc_OnLoad(self)
 
     -- lastly, make a clear button
     do
-        local button = CreateFrame("Button", "WoWCalcButtonClear", self, "UIPanelButtonTemplate")
+        local button = CreateFrame("Button", "WoWCalcButtonClear", self)
         button:SetSize(90, 40)
         button:SetText("CLEAR")
         button:SetNormalFontObject("GameFontNormalLarge")
@@ -128,7 +139,7 @@ function WoWCalc_OnShow(self)
     self.editBox.lastDigit = ""
     self.editBox.lastOperator = "+"
     self.editBox.currentText = 0
-    self.editBox:SetText(0)
+    self.editBox:SetText(FormatEditBox(0))
     
 end
 
@@ -165,19 +176,19 @@ function WoWCalcFrameValueButton_OnClick(self, buttonID)
     if buttonID == "+/-" then
         -- flip the value 
         local newValue = tonumber(currentText) * -1
-        editBox:SetText(newValue)
+        editBox:SetText(FormatEditBox(newValue))
         editBox.currentText = newValue
     elseif buttonID == "." then
         -- need to check that there hasnt been a decimal used, if there has just ignore
         if string.find(currentText, "%.") then
             return
         else
-            editBox:SetText(currentText .. buttonID)
+            editBox:SetText(FormatEditBox(currentText .. buttonID))
             editBox.currentText = currentText .. buttonID
         end
     else
         -- normal procedure, add to the edit box
-        editBox:SetText(currentText .. buttonID)
+        editBox:SetText(FormatEditBox(currentText .. buttonID))
         editBox.currentText = currentText .. buttonID
     end
     -- store the last digit we pressed 
@@ -200,7 +211,7 @@ function WoWCalcFrameOperatorButton_OnClick(self, buttonID)
 
         -- first, calculate the last set of things
         local result = OPERATORS[editBox.lastOperator](editBox.firstValue, editBox.secondValue)
-        editBox:SetText(result)
+        editBox:SetText(FormatEditBox(result))
         editBox.currentText = result
         editBox.firstValue = result
         -- editBox.secondValue = result
@@ -215,7 +226,7 @@ function WoWCalcEditBox_OnChar(self)
     -- and pass that in through a click event, but only if it matches a clickable button
     -- this allows us to control everything better, and play button animations when typing
     local char = string.sub(self:GetText(), -1)
-    self:SetText(self.currentText)
+    self:SetText(FormatEditBox(self.currentText))
 
     local button = self:GetParent().numberButtons[char]
     if button ~= nil then
@@ -255,6 +266,17 @@ function WoWCalcEditBox_OnKeyDown(self, key)
     end
 end
 
+function FormatEditBox(number)
+    -- adding some light formatting to the edit box
+    -- having this will also allow us to give the user freedom
+    -- to format as they like 
+    local formattedNumber = string.format("%.5f", number)
+    formattedNumber = formattedNumber:gsub("0+$", "") -- Remove trailing zeros
+    formattedNumber = formattedNumber:gsub("%.$", "") -- Remove trailing decimal point if no decimals
+    return formattedNumber
+end
+
+
 function WoWCalcButtonClear_OnClick(self)
     -- clear button pressed, reset everything
     local editBox = self:GetParent().editBox
@@ -263,7 +285,7 @@ function WoWCalcButtonClear_OnClick(self)
     editBox.lastDigit = ""
     editBox.lastOperator = "+"
     editBox.currentText = 0
-    editBox:SetText(0)
+    editBox:SetText(FormatEditBox(0))
 end
 
 function WoWCalc_SlashCommandHandler(msg)

@@ -49,7 +49,7 @@
             </OnKeyDown>
         </Scripts>
     </Frame>
-    <EditBox name="$parentEditBox"
+    <EditBox name="WowCalcEditBox"
              parent="WoWCalcFrame"
              parentKey="editBox"
              inherits="InputBoxTemplate"
@@ -72,4 +72,24 @@
             </OnKeyDown>
         </Scripts>
     </EditBox>
+    <Frame name="WoWCalcVariableFrame" parent="WoWCalcFrame" parentKey="variableFrame">
+        <Size>
+            <AbsDimension x="200"
+                          y="250" />
+        </Size>
+        <Anchors>
+            <Anchor point="RIGHT" relativePoint="RIGHT" x="-75" y="75" />
+        </Anchors>
+        <Scripts>
+            <OnLoad>
+                WoWCalcVariableFrame_OnLoad(self);
+            </OnLoad>
+        </Scripts>
+    </Frame>
+    <Button name="SavedVariablesButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
+        <Size>
+            <AbsDimension x="200"
+                          y="20" />
+        </Size>
+    </Button>
 </Ui>
