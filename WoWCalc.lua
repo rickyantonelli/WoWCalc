@@ -302,7 +302,7 @@ end
 function WoWCalc_SlashCommandHandler(msg)
     -- only command we have for now is to show the frame
     if WoWCalcParentFrame:IsShown() then
-        print("Calculator is already opened!")
+        WoWCalcParentFrame:Hide()
         return
     else
         WoWCalcParentFrame:Show()

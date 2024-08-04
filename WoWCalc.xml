@@ -57,6 +57,7 @@
     </Frame>
     <Frame name="WoWCalcFrame"
            parent="WoWCalcParentFrame"
+           parentKey = "calcFrame"
            enableMouse="true">
         <Size>
             <AbsDimension x="200"

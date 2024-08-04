@@ -40,8 +40,6 @@ function GenerateChildVariable(self, variableButton, name)
         width = width + button:GetHeight()
     end
 
-    print(name .. "has height of " .. height)
-
     local childButton = CreateFrame("Button", name, self, "ChildVariablesButtonTemplate")
     childButton.xOffset = 35
     childButton.yOffset = -95 - height
@@ -52,6 +50,8 @@ function GenerateChildVariable(self, variableButton, name)
     childButton:SetHighlightFontObject("GameFontNormalCenter")
     childButton:Hide()
     variableButton.childrenVariables[name] = childButton
+
+    return childButton
 end
 
 function WoWCalcVariableFrame_OnLoad(self)
@@ -72,11 +72,28 @@ function WoWCalcVariableFrame_OnLoad(self)
     local childButton2 = GenerateChildVariable(self, button, "ChildTestButton2")
     local childButton3 = GenerateChildVariable(self, button, "ChildTestButton3")
 
+    -- make a child button generator
+    local createChildButton = CreateFrame("Button", "CreateChildButton", self, "UIPanelButtonTemplate")
+    createChildButton:SetSize(60, 60)
+    createChildButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 50, 50)
+    createChildButton:SetScript("OnClick", function(self)
+        CreateChildButton_OnClick(self, createChildButton, button)
+    end)
+
 end
 
+function CreateChildButton_OnClick(self, button, variableButton)
+    local count = 1;
+    
+    for index, button in pairs(variableButton.childrenVariables) do
+        count = count + 1
+    end
 
-function GenerateButtons(self)
-    local variableButtons = self:GetParent().variableButtons
+    local childButton = GenerateChildVariable(self:GetParent(), variableButton, "ChildTestButton" .. count)
+
+    if variableButton.expanded then
+        childButton:Show()
+    end
 end
 
 function SavedVariablesFrameButton_OnClick(self)
