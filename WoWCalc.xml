@@ -2,9 +2,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
     <Frame name="WoWCalcParentFrame"
-           parent="UIParent">
-    </Frame>
-    <Frame name="WoWCalcFrame"
            parent="UIParent"
            hidden="true"
            movable="true"
@@ -37,8 +34,37 @@
             </Button>
         </Frames>
         <Scripts>
+            <OnLoad>
+                WoWCalcParentFrame_OnLoad(self);
+            </OnLoad>
+            <OnKeyDown>
+                WoWCalcParentFrame_OnKeyDown(self, key);
+            </OnKeyDown>
+        </Scripts>
+    </Frame>
+    <Frame name="WoWCalcFrame"
+           parent="WoWCalcParentFrame"
+           enableMouse="true">
+        <Size>
+            <AbsDimension x="200"
+                          y="275" />
+        </Size>
+        <Anchors>
+            <Anchor point="LEFT" />
+        </Anchors>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture name="$parentBackground"
+                         setAllPoints="true">
+                    <Color r="0"
+                           g="0"
+                           b="0"
+                           a="0.7" />
+                </Texture>
+            </Layer>
+        </Layers>
+        <Scripts>
             <OnLoad>                
-                print("loading");
                 WoWCalc_OnLoad(self);
             </OnLoad>
             <OnShow>                
@@ -54,12 +80,12 @@
              parentKey="editBox"
              inherits="InputBoxTemplate"
              autoFocus="false">
-        <Size x="150"
-              y="30" />
+        <Size x="110"
+              y="5" />
         <Anchors>
             <Anchor point="TOPLEFT"
                     relativePoint="TOPLEFT"
-                    x="50"
+                    x="55"
                     y="-30" />
         </Anchors>
         <FontString inherits="GameFontHighlightLarge"/>
@@ -72,7 +98,7 @@
             </OnKeyDown>
         </Scripts>
     </EditBox>
-    <Frame name="WoWCalcVariableFrame" parent="WoWCalcFrame" parentKey="variableFrame">
+    <Frame name="WoWCalcVariableFrame" parent="WoWCalcParentFrame" parentKey="variableFrame">
         <Size>
             <AbsDimension x="200"
                           y="250" />

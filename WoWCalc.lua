@@ -27,18 +27,31 @@ local OPERATORS = {
     end
 }
 
-function WoWCalc_OnLoad(self)
-    -- set this as a global variable that we can use
-    WoWCalcFrame = self
+function WoWCalcParentFrame_OnLoad(self)
+    -- set this as a global variable that we can use for slash commands
+    WoWCalcParentFrame = self
 
-    self:SetPropagateKeyboardInput(true) -- so that we dont consume the keyboard input (UI can still use)
+    -- ensures we still pass along key commands to the game while wehave the window open
+    self:SetPropagateKeyboardInput(true)
+
+    -- allows for dragging
     self:RegisterForDrag("LeftButton")
     self:SetScript("OnDragStart", self.StartMoving)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
+end
 
+function WoWCalcParentFrame_OnKeyDown(self, key)
+    if key == "ESCAPE" then
+        self:Hide()
+    end
+end
+
+function WoWCalc_OnLoad(self)
+    self:SetPropagateKeyboardInput(true) -- so that we dont consume the keyboard input (UI can still use)
+    
     local backdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
-    backdrop:SetPoint("TOPLEFT", self, "TOPLEFT", 35, -73)
-    backdrop:SetSize(190, 220)
+    backdrop:SetPoint("TOPLEFT", self, "TOPLEFT") --, 35, -73)
+    backdrop:SetSize(self:GetWidth(), self:GetHeight())
     backdrop:SetBackdrop({
         bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
         edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
@@ -52,8 +65,8 @@ function WoWCalc_OnLoad(self)
 
     local spacing = 9
     local buttonSize = 34
-    local startX = 40
-    local startY = -75
+    local startX = 10
+    local startY = -50
 
     -- create number buttons
     for rowIndex, row in ipairs(BUTTONMAPPINGS) do
@@ -144,9 +157,7 @@ function WoWCalc_OnShow(self)
 end
 
 function WoWCalc_OnKeyDown(self, key)
-    if key == "ESCAPE" then
-        self:Hide()
-    elseif key == "ENTER" then
+    if key == "ENTER" then
         -- need to think about if we want to keep this
         -- the current functionality is that it will calculate but also open the normal wow console
         local button = self.numberButtons["="]
@@ -290,11 +301,11 @@ end
 
 function WoWCalc_SlashCommandHandler(msg)
     -- only command we have for now is to show the frame
-    if WoWCalcFrame:IsShown() then
+    if WoWCalcParentFrame:IsShown() then
         print("Calculator is already opened!")
         return
     else
-        WoWCalcFrame:Show()
+        WoWCalcParentFrame:Show()
     end
 end
 
