@@ -30,6 +30,7 @@ local OPERATORS = {
 function WoWCalcParentFrame_OnLoad(self)
     -- set this as a global variable that we can use for slash commands
     WoWCalcParentFrame = self
+    self.savedVariableButtons = {}
 
     -- ensures we still pass along key commands to the game while wehave the window open
     self:SetPropagateKeyboardInput(true)
@@ -61,7 +62,6 @@ function WoWCalc_OnLoad(self)
     backdrop:SetBackdropColor(0, 0, 0, 0)
 
     self.numberButtons = {}
-    self.savedVariableButtons = {}
 
     local spacing = 9
     local buttonSize = 34

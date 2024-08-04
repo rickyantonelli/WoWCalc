@@ -1,6 +1,19 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <Button name="SavedVariablesButtonTemplate"
+            virtual="true">
+        <Size>
+            <AbsDimension x="200"
+                          y="20" />
+        </Size>
+    </Button>
+    <Button name="ChildVariablesButtonTemplate" virtual="true">
+        <Size>
+            <AbsDimension x="200"
+                          y="20" />
+        </Size>
+    </Button>
     <Frame name="WoWCalcParentFrame"
            parent="UIParent"
            hidden="true"
@@ -34,10 +47,10 @@
             </Button>
         </Frames>
         <Scripts>
-            <OnLoad>
+            <OnLoad>                
                 WoWCalcParentFrame_OnLoad(self);
             </OnLoad>
-            <OnKeyDown>
+            <OnKeyDown>                
                 WoWCalcParentFrame_OnKeyDown(self, key);
             </OnKeyDown>
         </Scripts>
@@ -88,9 +101,9 @@
                     x="55"
                     y="-30" />
         </Anchors>
-        <FontString inherits="GameFontHighlightLarge"/>
+        <FontString inherits="GameFontHighlightLarge" />
         <Scripts>
-            <OnChar>
+            <OnChar>                
                 WoWCalcEditBox_OnChar(self);
             </OnChar>
             <OnKeyDown>                
@@ -98,24 +111,24 @@
             </OnKeyDown>
         </Scripts>
     </EditBox>
-    <Frame name="WoWCalcVariableFrame" parent="WoWCalcParentFrame" parentKey="variableFrame">
+    <Frame name="WoWCalcVariableFrame"
+           parent="WoWCalcParentFrame"
+           parentKey="variableFrame">
         <Size>
             <AbsDimension x="200"
                           y="250" />
         </Size>
         <Anchors>
-            <Anchor point="RIGHT" relativePoint="RIGHT" x="-75" y="75" />
+            <Anchor point="RIGHT"
+                    relativePoint="RIGHT"
+                    x="-75"
+                    y="75" />
         </Anchors>
         <Scripts>
-            <OnLoad>
+            <OnLoad>                
                 WoWCalcVariableFrame_OnLoad(self);
             </OnLoad>
         </Scripts>
     </Frame>
-    <Button name="SavedVariablesButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
-        <Size>
-            <AbsDimension x="200"
-                          y="20" />
-        </Size>
-    </Button>
+    
 </Ui>
