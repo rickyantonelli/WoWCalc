@@ -1,5 +1,5 @@
-function GenerateSavedVariable(self, name)
-    local button = CreateFrame("Button", name, self, "SavedVariablesButtonTemplate")
+function GenerateSavedVariableParent(self, name)
+    local button = CreateFrame("Button", name, self, "SavedVariablesParentButtonTemplate")
     button.xOffset = 35
     button.yOffset = -75
 
@@ -11,7 +11,7 @@ function GenerateSavedVariable(self, name)
     button:SetScript("OnClick", function(self)
         SavedVariablesFrameButton_OnClick(self)
     end)
-    button.childrenVariables = {}
+    button.savedVariables = {}
     button.expanded = false
 
 
@@ -26,32 +26,34 @@ function GenerateSavedVariable(self, name)
     })
     buttonBackdrop:SetBackdropColor(0, 0, 0, 0.2)
 
-    self:GetParent().savedVariableButtons["name"] = button
+    self:GetParent().savedVariableParentButtons["name"] = button
 
     return button
 
 end
 
-function GenerateChildVariable(self, variableButton, name)
+function GenerateSavedVariable(self, variableButton, name)
     local height = 0
     local width = 0
-    for index, button in pairs(variableButton.childrenVariables) do
+    for index, button in pairs(variableButton.savedVariables) do
         height = height + button:GetHeight()
         width = width + button:GetHeight()
     end
 
-    local childButton = CreateFrame("Button", name, self, "ChildVariablesButtonTemplate")
-    childButton.xOffset = 35
-    childButton.yOffset = -95 - height
+    local savedVariableButton = CreateFrame("Button", name, self, "SavedVariableButtonTemplate")
+    savedVariableButton.xOffset = 35
+    savedVariableButton.yOffset = -95 - height
 
-    childButton:SetPoint("TOPLEFT", self, "TOPLEFT", 35, childButton.yOffset)
-    childButton:SetText(name)
-    childButton:SetNormalFontObject("GameFontNormalCenter")
-    childButton:SetHighlightFontObject("GameFontNormalCenter")
-    childButton:Hide()
-    variableButton.childrenVariables[name] = childButton
+    savedVariableButton:SetPoint("TOPLEFT", self, "TOPLEFT", 35, savedVariableButton.yOffset)
+    savedVariableButton:SetText(name)
+    savedVariableButton:SetNormalFontObject("GameFontNormalCenter")
+    savedVariableButton:SetHighlightFontObject("GameFontNormalCenter")
+    savedVariableButton:Hide()
 
-    return childButton
+    savedVariableButton.value = 10
+    variableButton.savedVariables[name] = savedVariableButton
+
+    return savedVariableButton
 end
 
 function WoWCalcVariableFrame_OnLoad(self)
@@ -66,33 +68,35 @@ function WoWCalcVariableFrame_OnLoad(self)
     })
     backdrop:SetBackdropColor(0, 0, 0, 0)
     
-    local button = GenerateSavedVariable(self, "SavedVariablesButton")
+    local button = GenerateSavedVariableParent(self, "SavedVariablesButton")
 
-    local childButton1 = GenerateChildVariable(self, button, "ChildTestButton1")
-    local childButton2 = GenerateChildVariable(self, button, "ChildTestButton2")
-    local childButton3 = GenerateChildVariable(self, button, "ChildTestButton3")
+    local savedVariableButton1 = GenerateSavedVariable(self, button, "SavedVariableButton1")
+    local savedVariableButton2 = GenerateSavedVariable(self, button, "SavedVariableButton2")
+    local savedVariableButton3 = GenerateSavedVariable(self, button, "SavedVariableButton3")
 
     -- make a child button generator
-    local createChildButton = CreateFrame("Button", "CreateChildButton", self, "UIPanelButtonTemplate")
-    createChildButton:SetSize(60, 60)
-    createChildButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 50, 50)
-    createChildButton:SetScript("OnClick", function(self)
-        CreateChildButton_OnClick(self, createChildButton, button)
+    local createsavedVariableButton = CreateFrame("Button", "CreatesavedVariableButton", self, "UIPanelButtonTemplate")
+    createsavedVariableButton:SetSize(60, 60)
+    createsavedVariableButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 50, 50)
+    createsavedVariableButton:SetScript("OnClick", function(self)
+        CreatesavedVariableButton_OnClick(self, createsavedVariableButton, button)
     end)
 
 end
 
-function CreateChildButton_OnClick(self, button, variableButton)
+function CreatesavedVariableButton_OnClick(self, button, variableButton)
+    -- for now this is for testing
+    -- but this will become some sort of "Create Variable" button
     local count = 1;
-    
-    for index, button in pairs(variableButton.childrenVariables) do
+
+    for index, button in pairs(variableButton.savedVariables) do
         count = count + 1
     end
 
-    local childButton = GenerateChildVariable(self:GetParent(), variableButton, "ChildTestButton" .. count)
+    local savedVariableButton = GenerateSavedVariable(self:GetParent(), variableButton, "SavedVariableButton" .. count)
 
     if variableButton.expanded then
-        childButton:Show()
+        savedVariableButton:Show()
     end
 end
 
@@ -109,13 +113,47 @@ function SavedVariablesFrameButton_OnClick(self)
     end
 
     if self.expanded then
-        for index, child in pairs(self.childrenVariables) do
+        for index, child in pairs(self.savedVariables) do
             child:Show()
         end
     else
-        for index, child in pairs(self.childrenVariables) do
+        for index, child in pairs(self.savedVariables) do
             child:Hide()
         end
+    end
+end
+
+function SavedVariableButton_OnDragStart(self, button)
+    if button == "LeftButton" then
+        self:StartMoving()
+        self.isMoving = true
+    end
+end
+
+function SavedVariableButton_OnDragStop(self, button)
+    if self.isMoving then
+        self:StopMovingOrSizing()
+        self.isMoving = false
+
+        local cursorX, cursorY = GetCursorPosition()
+        local scale = UIParent:GetEffectiveScale()
+        cursorX = cursorX / scale
+        cursorY = cursorY / scale
+
+        local calcFrame = self:GetParent():GetParent().calcFrame
+        local editBox = calcFrame.editBox
+        local left, bottom, width, height = calcFrame:GetLeft(), calcFrame:GetBottom(), calcFrame:GetWidth(), calcFrame:GetHeight()
+        if cursorX >= left and cursorX <= (left + width) and cursorY >= bottom and cursorY <= (bottom + height) then
+            -- TODO: need to properly set text with FormatEditBox()
+            -- also ensure that just setting text is ok, and that we dont need to reset anything
+            editBox:SetText(self.value)
+        end
+
+
+        -- Move the button back to its original position
+        self:ClearAllPoints()
+        self:SetPoint("TOPLEFT", self:GetParent(), self.xOffset, self.yOffset)
+
     end
 end
 

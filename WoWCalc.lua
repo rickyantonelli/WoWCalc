@@ -30,10 +30,11 @@ local OPERATORS = {
 function WoWCalcParentFrame_OnLoad(self)
     -- set this as a global variable that we can use for slash commands
     WoWCalcParentFrame = self
-    self.savedVariableButtons = {}
+    self.savedVariableParentButtons = {}
 
     -- ensures we still pass along key commands to the game while wehave the window open
     self:SetPropagateKeyboardInput(true)
+    self:SetClampedToScreen(true)
 
     -- allows for dragging
     self:RegisterForDrag("LeftButton")

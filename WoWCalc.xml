@@ -1,18 +1,26 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-    <Button name="SavedVariablesButtonTemplate"
+    <Button name="SavedVariablesParentButtonTemplate"
             virtual="true">
         <Size>
             <AbsDimension x="200"
                           y="20" />
         </Size>
     </Button>
-    <Button name="ChildVariablesButtonTemplate" virtual="true">
+    <Button name="SavedVariableButtonTemplate" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
         <Size>
             <AbsDimension x="200"
                           y="20" />
         </Size>
+        <Scripts>
+            <OnMouseDown>
+                SavedVariableButton_OnDragStart(self, button);
+            </OnMouseDown>
+            <OnMouseUp>
+                SavedVariableButton_OnDragStop(self, button);
+            </OnMouseUp>
+        </Scripts>
     </Button>
     <Frame name="WoWCalcParentFrame"
            parent="UIParent"
@@ -64,7 +72,10 @@
                           y="275" />
         </Size>
         <Anchors>
-            <Anchor point="LEFT" />
+            <Anchor point="LEFT"
+            relativePoint="LEFT"
+                    x="20"
+                    y="0" />
         </Anchors>
         <Layers>
             <Layer level="BACKGROUND">
