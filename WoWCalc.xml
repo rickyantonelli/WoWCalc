@@ -1,6 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+    <!-- Button Templates -->
     <Button name="SavedVariablesParentButtonTemplate"
             virtual="true">
         <Size>
@@ -8,20 +9,28 @@
                           y="20" />
         </Size>
     </Button>
-    <Button name="SavedVariableButtonTemplate" virtual="true" movable="true" enableMouse="true" clampedToScreen="true">
+    <Button name="SavedVariableButtonTemplate"
+            virtual="true"
+            movable="true"
+            enableMouse="true"
+            clampedToScreen="true">
         <Size>
             <AbsDimension x="200"
                           y="20" />
         </Size>
         <Scripts>
-            <OnMouseDown>
+            <OnUpdate>                
+                SavedVariableButton_OnUpdate(self);
+            </OnUpdate>
+            <OnMouseDown>                
                 SavedVariableButton_OnDragStart(self, button);
             </OnMouseDown>
-            <OnMouseUp>
+            <OnMouseUp>                
                 SavedVariableButton_OnDragStop(self, button);
             </OnMouseUp>
         </Scripts>
     </Button>
+    <!-- Parent frame for the addon -->
     <Frame name="WoWCalcParentFrame"
            parent="UIParent"
            hidden="true"
@@ -63,9 +72,10 @@
             </OnKeyDown>
         </Scripts>
     </Frame>
+    <!-- Calculator Frame -->
     <Frame name="WoWCalcFrame"
            parent="WoWCalcParentFrame"
-           parentKey = "calcFrame"
+           parentKey="calcFrame"
            enableMouse="true">
         <Size>
             <AbsDimension x="200"
@@ -73,7 +83,7 @@
         </Size>
         <Anchors>
             <Anchor point="LEFT"
-            relativePoint="LEFT"
+                    relativePoint="LEFT"
                     x="20"
                     y="0" />
         </Anchors>
@@ -88,6 +98,30 @@
                 </Texture>
             </Layer>
         </Layers>
+        <Frames>
+            <EditBox name="WowCalcEditBox"
+                     parentKey="editBox"
+                     inherits="InputBoxTemplate"
+                     autoFocus="false">
+                <Size x="110"
+                      y="5" />
+                <Anchors>
+                    <Anchor point="TOPLEFT"
+                            relativePoint="TOPLEFT"
+                            x="55"
+                            y="-30" />
+                </Anchors>
+                <FontString inherits="GameFontHighlightLarge" />
+                <Scripts>
+                    <OnChar>                        
+                        WoWCalcEditBox_OnChar(self);
+                    </OnChar>
+                    <OnKeyDown>                        
+                        WoWCalcEditBox_OnKeyDown(self, key);
+                    </OnKeyDown>
+                </Scripts>
+            </EditBox>
+        </Frames>
         <Scripts>
             <OnLoad>                
                 WoWCalc_OnLoad(self);
@@ -100,29 +134,98 @@
             </OnKeyDown>
         </Scripts>
     </Frame>
-    <EditBox name="WowCalcEditBox"
-             parent="WoWCalcFrame"
-             parentKey="editBox"
-             inherits="InputBoxTemplate"
-             autoFocus="false">
-        <Size x="110"
-              y="5" />
+    <!-- Save new variable frame -->
+    <Frame name="SaveVariableFrame"
+           parent="WoWCalcParentFrame"
+           parentKey="saveVariableFrame"
+           hidden="true"
+           enableMouse="true"
+           movable="true">
+        <Size>
+            <AbsDimension x="300"
+                          y="200" />
+        </Size>
         <Anchors>
-            <Anchor point="TOPLEFT"
-                    relativePoint="TOPLEFT"
-                    x="55"
-                    y="-30" />
+            <Anchor point="TOPRIGHT"
+                    relativePoint="TOPRIGHT"
+                    x="350"
+                    y="0" />
         </Anchors>
-        <FontString inherits="GameFontHighlightLarge" />
-        <Scripts>
-            <OnChar>                
-                WoWCalcEditBox_OnChar(self);
-            </OnChar>
-            <OnKeyDown>                
-                WoWCalcEditBox_OnKeyDown(self, key);
-            </OnKeyDown>
-        </Scripts>
-    </EditBox>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture name="$parentBackground"
+                         setAllPoints="true">
+                    <Color r="0"
+                           g="0"
+                           b="0"
+                           a="0.7" />
+                </Texture>
+            </Layer>
+        </Layers>
+        <Frames>
+            <EditBox name="$parentEditBoxName"
+                     parentKey="variableNameEditBox"
+                     inherits="InputBoxTemplate"
+                     autoFocus="false">
+                <Size x="110"
+                      y="5" />
+                <Anchors>
+                    <Anchor point="TOP"
+                            relativePoint="TOP"
+                            x="75"
+                            y="-50" />
+                </Anchors>
+                <Scripts>
+                    <OnKeyDown>                        
+                        SaveVariableFrameEditBoxName_OnKeyDown(self, key);
+                    </OnKeyDown>
+                </Scripts>
+            </EditBox>
+            <EditBox name="$parentEditBoxValue"
+                     parentKey="variableValueEditBox"
+                     inherits="InputBoxTemplate"
+                     autoFocus="false">
+                <Size x="110"
+                      y="5" />
+                <Anchors>
+                    <Anchor point="TOP"
+                            relativePoint="TOP"
+                            x="75"
+                            y="-100" />
+                </Anchors>
+            </EditBox>
+            <Button name="$parentButton"
+                    parentKey="saveVariable"
+                    inherits="UIPanelButtonTemplate">
+                <Size>
+                    <AbsDimension x="120"
+                                  y="40" />
+                </Size>
+                <Anchors>
+                    <Anchor point="TOP"
+                            relativePoint="TOP"
+                            x="75"
+                            y="-125" />
+                </Anchors>
+                <Scripts>
+                    <OnLoad>                        
+                        SaveVariableFrameButton_OnLoad(self);
+                    </OnLoad>
+                    <OnClick>                        
+                        SaveVariableFrameButton_OnClick(self);
+                    </OnClick>
+                </Scripts>
+            </Button>
+            <Button name="$parent_Close"
+                    parentKey="close"
+                    inherits="UIPanelCloseButton">
+                <Anchors>
+                    <Anchor point="TOPRIGHT" />
+                </Anchors>
+            </Button>
+        </Frames>
+    </Frame>
+    <!-- Saved variables frame -->
     <Frame name="WoWCalcVariableFrame"
            parent="WoWCalcParentFrame"
            parentKey="variableFrame">
@@ -142,5 +245,4 @@
             </OnLoad>
         </Scripts>
     </Frame>
-    
 </Ui>

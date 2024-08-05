@@ -8,6 +8,7 @@ function GenerateSavedVariableParent(self, name)
     button:SetText("Saved Variables               +")
     button:SetNormalFontObject("GameFontNormalCenter")
     button:SetHighlightFontObject("GameFontNormalCenter")
+    button:SetParentKey("savedVariablesButton")
     button:SetScript("OnClick", function(self)
         SavedVariablesFrameButton_OnClick(self)
     end)
@@ -32,19 +33,23 @@ function GenerateSavedVariableParent(self, name)
 
 end
 
-function GenerateSavedVariable(self, variableButton, name)
+function GenerateSavedVariable(variableButton, name)
+    -- TODO: if name is empty then return
+    -- if name already exists then consider this being a change in the existing button
+    -- so just change what we need and return the existing button
     local height = 0
     local width = 0
+    local variablesFrame = variableButton:GetParent()
     for index, button in pairs(variableButton.savedVariables) do
         height = height + button:GetHeight()
         width = width + button:GetHeight()
     end
 
-    local savedVariableButton = CreateFrame("Button", name, self, "SavedVariableButtonTemplate")
+    local savedVariableButton = CreateFrame("Button", name, variablesFrame, "SavedVariableButtonTemplate")
     savedVariableButton.xOffset = 35
     savedVariableButton.yOffset = -95 - height
 
-    savedVariableButton:SetPoint("TOPLEFT", self, "TOPLEFT", 35, savedVariableButton.yOffset)
+    savedVariableButton:SetPoint("TOPLEFT", variablesFrame, "TOPLEFT", 35, savedVariableButton.yOffset)
     savedVariableButton:SetText(name)
     savedVariableButton:SetNormalFontObject("GameFontNormalCenter")
     savedVariableButton:SetHighlightFontObject("GameFontNormalCenter")
@@ -70,14 +75,15 @@ function WoWCalcVariableFrame_OnLoad(self)
     
     local button = GenerateSavedVariableParent(self, "SavedVariablesButton")
 
-    local savedVariableButton1 = GenerateSavedVariable(self, button, "SavedVariableButton1")
-    local savedVariableButton2 = GenerateSavedVariable(self, button, "SavedVariableButton2")
-    local savedVariableButton3 = GenerateSavedVariable(self, button, "SavedVariableButton3")
+    local savedVariableButton1 = GenerateSavedVariable(button, "SavedVariableButton1")
+    local savedVariableButton2 = GenerateSavedVariable(button, "SavedVariableButton2")
+    local savedVariableButton3 = GenerateSavedVariable(button, "SavedVariableButton3")
 
     -- make a child button generator
     local createsavedVariableButton = CreateFrame("Button", "CreatesavedVariableButton", self, "UIPanelButtonTemplate")
-    createsavedVariableButton:SetSize(60, 60)
-    createsavedVariableButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 50, 50)
+    createsavedVariableButton:SetSize(140, 30)
+    createsavedVariableButton:SetText("Create New Variable")
+    createsavedVariableButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, -35)
     createsavedVariableButton:SetScript("OnClick", function(self)
         CreatesavedVariableButton_OnClick(self, createsavedVariableButton, button)
     end)
@@ -85,24 +91,18 @@ function WoWCalcVariableFrame_OnLoad(self)
 end
 
 function CreatesavedVariableButton_OnClick(self, button, variableButton)
-    -- for now this is for testing
-    -- but this will become some sort of "Create Variable" button
-    local count = 1;
+    -- opens the create variable frame
+    local createVariableFrame = self:GetParent():GetParent().saveVariableFrame
+    createVariableFrame:Show()
 
-    for index, button in pairs(variableButton.savedVariables) do
-        count = count + 1
-    end
-
-    local savedVariableButton = GenerateSavedVariable(self:GetParent(), variableButton, "SavedVariableButton" .. count)
-
-    if variableButton.expanded then
-        savedVariableButton:Show()
-    end
+    -- for convenience, focus the first edit box
+    createVariableFrame.variableNameEditBox:SetFocus(true)
 end
 
 function SavedVariablesFrameButton_OnClick(self)
     -- handles text change for the parent button
     -- displays or hides the children buttons
+    -- text needs to be updated in the future to be more robust
     local currentText = self:GetText()
     if self.expanded then
         self.expanded = false
@@ -146,6 +146,7 @@ function SavedVariableButton_OnDragStop(self, button)
         if cursorX >= left and cursorX <= (left + width) and cursorY >= bottom and cursorY <= (bottom + height) then
             -- TODO: need to properly set text with FormatEditBox()
             -- also ensure that just setting text is ok, and that we dont need to reset anything
+            -- button doesnt move with parent until clicked
             editBox:SetText(self.value)
         end
 
@@ -157,6 +158,68 @@ function SavedVariableButton_OnDragStop(self, button)
     end
 end
 
+function SavedVariableButton_OnUpdate(self)
+    -- ensures that the button moves with the frame whenever we drag the frame
+    if not self.isMoving then
+        self:SetPoint("TOPLEFT", self:GetParent(), self.xOffset, self.yOffset)
+    end
+end
+
+function SaveVariableFrameButton_OnLoad(self)
+    -- ensures we still pass along key commands to the game while wehave the window open
+    self:SetPropagateKeyboardInput(true)
+    self:SetClampedToScreen(true)
+
+    -- allows for dragging
+    self:RegisterForDrag("LeftButton")
+    self:SetScript("OnDragStart", self.StartMoving)
+    self:SetScript("OnDragStop", self.StopMovingOrSizing)
+
+    self:SetText("Create Variable")
+
+    local titleFrame = CreateFrame("Frame", "SaveVariableFrameTitle", self:GetParent())
+    titleFrame:SetSize(self:GetParent():GetWidth(), 30)
+    titleFrame:SetPoint("BOTTOM", self:GetParent(), "TOP", 0, 0)
+    local titleText = titleFrame:CreateFontString("$parentTitle", "OVERLAY", "GameFontNormal")
+    titleText:SetPoint("CENTER")
+    titleText:SetText("Save a New Variable")
+
+    local nameLabel = self:GetParent().variableNameEditBox:CreateFontString("$parentLabel", "OVERLAY", "GameFontNormal")
+    nameLabel:SetPoint("LEFT",  self:GetParent().variableNameEditBox, "LEFT", -self:GetParent().variableNameEditBox:GetWidth() - 50, 0)
+    nameLabel:SetText("Enter variable name here:")
+
+    local valueLabel = self:GetParent().variableValueEditBox:CreateFontString("$parentLabel", "OVERLAY", "GameFontNormal")
+    valueLabel:SetPoint("LEFT", self:GetParent().variableValueEditBox, "LEFT", -self:GetParent().variableValueEditBox:GetWidth() - 50, 0)
+    valueLabel:SetText("Enter variable value here:")
+end
+
+function SaveVariableFrameButton_OnClick(self)
+    -- saves the variable with the frame's edit boxes as
+    -- TODO: Clicking this button multiple times has weird behavior with displaying
+    -- seems to make the first button fine, but then the rest of the buttons overlap
+    -- oh it's because we are naming it the same thing, we should stop that from happening
+    local name = self:GetParent().variableNameEditBox:GetText()
+    local value = self:GetParent().variableValueEditBox:GetText()
+    local variablesFrame = self:GetParent():GetParent().variableFrame
+    local variableButton = variablesFrame.savedVariablesButton
+    local savedVariableButton = GenerateSavedVariable(variableButton, name)
+    savedVariableButton.value = value
+
+    if variableButton.expanded then
+        savedVariableButton:Show()
+    end
+
+end
+
+function SaveVariableFrameEditBoxName_OnKeyDown(self, key)
+    if key == "TAB" then
+        -- for convenience - pressing tab will focus the next editBox
+        self:GetParent().variableValueEditBox:SetFocus(true)
+    end
+end
+
 -- for later, when we have multiple variable buttons
 -- we can just store all of them and then when we open anything up, we loop through 
 -- parents (and their children) to replace everything
+
+-- need to add tooltips to the variables

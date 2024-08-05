@@ -40,6 +40,13 @@ function WoWCalcParentFrame_OnLoad(self)
     self:RegisterForDrag("LeftButton")
     self:SetScript("OnDragStart", self.StartMoving)
     self:SetScript("OnDragStop", self.StopMovingOrSizing)
+
+    local titleFrame = CreateFrame("Frame", "SaveVariableFrameTitle", self)
+    titleFrame:SetSize(self:GetWidth(), 30)
+    titleFrame:SetPoint("BOTTOM", self, "TOP", 0, 0)
+    local titleText = titleFrame:CreateFontString("$parentTitle", "OVERLAY", "GameFontNormal")
+    titleText:SetPoint("CENTER")
+    titleText:SetText("WoWCalc")
 end
 
 function WoWCalcParentFrame_OnKeyDown(self, key)
