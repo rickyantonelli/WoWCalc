@@ -1,4 +1,3 @@
-
 -- set up to help properly space out button mappings
 local BUTTONMAPPINGS = {
     {7, 8, 9},
@@ -27,10 +26,13 @@ local OPERATORS = {
     end
 }
 
+-------------------- PARENT FRAME --------------------
 function WoWCalcParentFrame_OnLoad(self)
+    self:RegisterEvent("ADDON_LOADED")
+    self:SetScript("OnEvent", OnEvent)
+
     -- set this as a global variable that we can use for slash commands
     WoWCalcParentFrame = self
-    self.savedVariableParentButtons = {}
 
     -- ensures we still pass along key commands to the game while wehave the window open
     self:SetPropagateKeyboardInput(true)
@@ -54,6 +56,34 @@ function WoWCalcParentFrame_OnKeyDown(self, key)
         self:Hide()
     end
 end
+
+function OnEvent(self, event, arg1)
+    if event == "ADDON_LOADED" and arg1 == "WoWCalc" then
+        self:UnregisterEvent("ADDON_LOADED")
+        if not SavedVariableParents then 
+            SavedVariableParents = {}
+        else
+            LoadButtons(self.variableFrame)
+        end
+        
+        
+    end
+end
+
+function LoadButtons(self)
+    -- loads the saved variable parents, whose tables contain the actual saved variables
+    if SavedVariableParents["SavedVariablesButton"] == nil then
+        SavedVariableParents["SavedVariablesButton"] = {}
+        print("adding to saved table")
+    else
+        print("already there")
+    end
+    -- SavedVariableParents["SavedVariablesButton"] = {}
+    
+    local button = GenerateSavedVariableParent(self, "SavedVariablesButton")
+end
+
+-------------------- CALCULATOR FRAME --------------------
 
 function WoWCalc_OnLoad(self)
     self:SetPropagateKeyboardInput(true) -- so that we dont consume the keyboard input (UI can still use)
@@ -306,6 +336,8 @@ function WoWCalcButtonClear_OnClick(self)
     editBox.currentText = 0
     editBox:SetText(FormatEditBox(0))
 end
+
+-------------------- SLASH COMMANDS --------------------
 
 function WoWCalc_SlashCommandHandler(msg)
     -- only command we have for now is to show the frame

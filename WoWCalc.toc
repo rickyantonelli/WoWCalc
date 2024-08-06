@@ -4,6 +4,8 @@
 ## Author: Scenic
 ## Version: 1.0
 
+## SavedVariables: SavedVariableParents
+
 WoWCalc.lua
 SavedVariables.lua
 WoWCalc.xml

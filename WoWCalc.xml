@@ -84,7 +84,7 @@
         <Anchors>
             <Anchor point="LEFT"
                     relativePoint="LEFT"
-                    x="20"
+                    x="30"
                     y="0" />
         </Anchors>
         <Layers>
@@ -224,6 +224,11 @@
                 </Anchors>
             </Button>
         </Frames>
+        <Scripts>
+            <OnLoad>
+                SaveVariableFrame_OnLoad(self);
+            </OnLoad>
+        </Scripts>
     </Frame>
     <!-- Saved variables frame -->
     <Frame name="WoWCalcVariableFrame"
@@ -236,7 +241,7 @@
         <Anchors>
             <Anchor point="RIGHT"
                     relativePoint="RIGHT"
-                    x="-75"
+                    x="-70"
                     y="75" />
         </Anchors>
         <Scripts>
