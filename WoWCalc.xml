@@ -19,6 +19,9 @@
                           y="20" />
         </Size>
         <Scripts>
+            <OnLoad>
+                self:RegisterForClicks("AnyUp")
+            </OnLoad>
             <OnUpdate>                
                 SavedVariableButton_OnUpdate(self);
             </OnUpdate>
@@ -28,17 +31,21 @@
             <OnMouseUp>                
                 SavedVariableButton_OnDragStop(self, button);
             </OnMouseUp>
+            <OnClick>
+                SavedVariableButton_OnClick(self, button);
+            </OnClick>
         </Scripts>
     </Button>
     <!-- Parent frame for the addon -->
     <Frame name="WoWCalcParentFrame"
            parent="UIParent"
+           inherits="DefaultPanelTemplate"
            hidden="true"
            movable="true"
            enableMouse="true">
         <Size>
-            <AbsDimension x="500"
-                          y="350" />
+            <AbsDimension x="600"
+                          y="400" />
         </Size>
         <Anchors>
             <Anchor point="CENTER" />
@@ -138,6 +145,7 @@
     <Frame name="SaveVariableFrame"
            parent="WoWCalcParentFrame"
            parentKey="saveVariableFrame"
+           inherits="DefaultPanelBaseTemplate"
            hidden="true"
            enableMouse="true"
            movable="true">

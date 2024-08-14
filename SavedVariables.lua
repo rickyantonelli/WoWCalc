@@ -1,5 +1,4 @@
 -------------------- VARIABLE GENERATION --------------------
-
 function GenerateSavedVariableParent(self, name)
     local button = CreateFrame("Button", name, self, "SavedVariablesParentButtonTemplate")
     button.xOffset = 35
@@ -192,15 +191,52 @@ function SavedVariableButton_OnDragStop(self, button)
     end
 end
 
+function SavedVariableButton_OnClick(self, button)
+    if button == "RightButton" then
+        -- show right click context menu
+        SavedVariableButton_ShowContextMenu(self)
+    end
+end
+
+function SavedVariableButton_ShowContextMenu(savedVariable)
+    -- display the context menu
+    
+    if not C_AddOns.IsAddOnLoaded("Blizzard_DebugTools") then
+        UIParentLoadAddOn("Blizzard_DebugTools")
+    end
+
+    -- Initialize the dropdown menu
+    local function InitializeMenu(self, level)
+        local info1 = UIDropDownMenu_CreateInfo()
+
+        -- Menu item 1
+        info1.text = "Option 1"
+        info1.func = function() 
+            DeleteSavedVariable(savedVariable)
+        end
+        UIDropDownMenu_AddButton(info1, level)
+        
+        local info2 = UIDropDownMenu_CreateInfo()
+
+        -- Cancel item
+        info2.text = "Cancel"
+        info2.func = function() end  -- No action, just closes the menu
+        UIDropDownMenu_AddButton(info2, level)
+    end
+
+    local contextMenuFrame = CreateFrame("Frame", "SavedVariableContextMenu", savedVariable:GetParent(), "UIDropDownMenuTemplate")
+    UIDropDownMenu_Initialize(contextMenuFrame, InitializeMenu, "MENU")
+    ToggleDropDownMenu(1, nil, contextMenuFrame, "cursor", 0, 0)
+end
+
+function DeleteSavedVariable(self)
+    print("deleting" .. self:GetName())
+end
+
 -------------------- CREATE NEW VARIABLE FRAME --------------------
 function SaveVariableFrame_OnLoad(self)
     --TODO: Third editBox for an optional description that will display in the tooltip
-    local titleFrame = CreateFrame("Frame", "SaveVariableFrameTitle", self)
-    titleFrame:SetSize(self:GetWidth(), 30)
-    titleFrame:SetPoint("BOTTOM", self, "TOP", 0, 0)
-    local titleText = titleFrame:CreateFontString("$parentTitle", "OVERLAY", "GameFontNormal")
-    titleText:SetPoint("CENTER")
-    titleText:SetText("Save a New Variable")
+    self.TitleContainer.TitleText:SetText("Save a New Variable")
 
     local nameLabel = self.variableNameEditBox:CreateFontString("$parentLabel", "OVERLAY", "GameFontNormal")
     nameLabel:SetPoint("LEFT",  self.variableNameEditBox, "LEFT", -self.variableNameEditBox:GetWidth() - 50, 0)
