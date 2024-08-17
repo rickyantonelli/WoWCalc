@@ -44,8 +44,8 @@
            movable="true"
            enableMouse="true">
         <Size>
-            <AbsDimension x="600"
-                          y="400" />
+            <AbsDimension x="500"
+                          y="390" />
         </Size>
         <Anchors>
             <Anchor point="CENTER" />

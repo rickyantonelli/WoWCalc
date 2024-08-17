@@ -1,12 +1,12 @@
 -------------------- VARIABLE GENERATION --------------------
-function GenerateSavedVariableParent(self, name)
-    local button = CreateFrame("Button", name, self, "SavedVariablesParentButtonTemplate")
+function GenerateSavedVariableParent(variableFrame, name)
+    local button = CreateFrame("Button", name, variableFrame, "SavedVariablesParentButtonTemplate")
     button.xOffset = 35
     button.yOffset = -75
     button.name = name
 
 
-    button:SetPoint("TOPLEFT", self, "TOPLEFT", button.xOffset, button.yOffset)
+    button:SetPoint("TOPLEFT", variableFrame, "TOPLEFT", button.xOffset, button.yOffset)
     button:SetText("Saved Variables               +")
     button:SetNormalFontObject("GameFontNormalCenter")
     button:SetHighlightFontObject("GameFontNormalCenter")
@@ -14,6 +14,7 @@ function GenerateSavedVariableParent(self, name)
     button:SetScript("OnClick", function(self)
         SavedVariablesFrameButton_OnClick(self)
     end)
+    variableFrame.savedVariableParentButtons[name] = button
     if not button.savedVariables then
         button.savedVariables = {}
     end
@@ -21,7 +22,7 @@ function GenerateSavedVariableParent(self, name)
 
 
     local buttonBackdrop = CreateFrame("Frame", "VariableFrameBackdrop", button, "BackdropTemplate")
-    buttonBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", button.xOffset, button.yOffset)
+    buttonBackdrop:SetPoint("TOPLEFT", variableFrame, "TOPLEFT", button.xOffset, button.yOffset)
     buttonBackdrop:SetSize(buttonBackdrop:GetParent():GetWidth(), buttonBackdrop:GetParent():GetHeight())
     buttonBackdrop:SetBackdrop({
         bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -57,7 +58,11 @@ function GenerateSavedVariable(variableButton, name, value)
     savedVariableButton.xOffset = 35
     savedVariableButton.yOffset = -95 - height
 
-    savedVariableButton:SetPoint("TOPLEFT", variablesFrame, "TOPLEFT", 35, savedVariableButton.yOffset)
+    -- TODO: not a fan of this hierarchy at all, saved variables parent is the main frame but not the parentButton
+    -- very confusing
+    savedVariableButton.categoryButton = variableButton
+
+    -- savedVariableButton:SetPoint("TOPLEFT", variablesFrame, "TOPLEFT", 35, savedVariableButton.yOffset)
     savedVariableButton:SetText(name)
     savedVariableButton:SetNormalFontObject("GameFontNormalCenter")
     savedVariableButton:SetHighlightFontObject("GameFontNormalCenter")
@@ -90,9 +95,7 @@ function WoWCalcVariableFrame_OnLoad(self)
     })
     backdrop:SetBackdropColor(0, 0, 0, 0)
 
-    -- local savedVariableButton1 = GenerateSavedVariable(button, "SavedVariableButton1")
-    -- local savedVariableButton2 = GenerateSavedVariable(button, "SavedVariableButton2")
-    -- local savedVariableButton3 = GenerateSavedVariable(button, "SavedVariableButton3")
+    self.savedVariableParentButtons = {}
 
     -- make a child button generator
     local createsavedVariableButton = CreateFrame("Button", "CreatesavedVariableButton", self, "UIPanelButtonTemplate")
@@ -116,6 +119,7 @@ end
 
 function SavedVariableButton_OnUpdate(self)
     -- ensures that the button moves with the frame whenever we drag the frame
+    -- TODO: lets find out what the overhead on this is, it gets called very often
     if not self.isMoving then
         self:SetPoint("TOPLEFT", self:GetParent(), self.xOffset, self.yOffset)
     end
@@ -129,19 +133,17 @@ function SavedVariablesFrameButton_OnClick(self)
     if self.expanded then
         self.expanded = false
         self:SetText(string.gsub(currentText, "%-", "+"))
-    else
-        self.expanded = true
-        self:SetText(string.gsub(currentText, "%+", "-"))
-    end
-
-    if self.expanded then
-        for index, child in pairs(self.savedVariables) do
-            child:Show()
-        end
-    else
         for index, child in pairs(self.savedVariables) do
             child:Hide()
         end
+        UpdateButtonLocations(self:GetParent())
+    else
+        self.expanded = true
+        self:SetText(string.gsub(currentText, "%+", "-"))
+        for index, child in pairs(self.savedVariables) do
+            child:Show()
+        end
+        UpdateButtonLocations(self:GetParent())
     end
 end
 
@@ -210,7 +212,7 @@ function SavedVariableButton_ShowContextMenu(savedVariable)
         local info1 = UIDropDownMenu_CreateInfo()
 
         -- Menu item 1
-        info1.text = "Option 1"
+        info1.text = "Delete"
         info1.func = function() 
             DeleteSavedVariable(savedVariable)
         end
@@ -230,7 +232,46 @@ function SavedVariableButton_ShowContextMenu(savedVariable)
 end
 
 function DeleteSavedVariable(self)
-    print("deleting" .. self:GetName())
+    print("Deleting variable: " .. self.name)
+    -- to delete, we need to do the following:
+    -- remove the entry from the parent button's savedVariables
+    -- remove the entry from the SavedVariableParents table
+    -- call UpdateButtonLocations()
+    -- final thing - do self:Destroy()
+
+    -- remove self from the parent button's table
+    self.categoryButton.savedVariables[self.name] = nil
+    -- remove self from the SavedVariables table
+    SavedVariableParents[self.categoryButton:GetName()][self.name] = nil
+    -- update all button locations
+    self:Hide()
+    UpdateButtonLocations(self:GetParent())
+end
+
+function UpdateButtonLocations(self)
+    
+    -- first, need to loop through all the parent vars
+    -- in those parent vars, loop through all children
+    -- check expanded to see if we need to loop through the children though
+    -- need some local yOffset value tracker, dont care about xOffset 
+    -- set this up for when we have multiple parent buttons (which will become categories)
+
+    local yOffset = -55
+    for parentName, parentButton in pairs(self.savedVariableParentButtons) do
+        -- want to put the first one at -75, height is 20
+        yOffset = yOffset - parentButton:GetHeight()
+        parentButton.yOffset = yOffset
+        parentButton:SetPoint("TOPLEFT", self, "TOPLEFT", parentButton.xOffset, parentButton.yOffset)
+        if parentButton.expanded then
+            for childName, childButton in pairs(parentButton.savedVariables) do
+                yOffset = yOffset - childButton:GetHeight()
+                childButton.yOffset = yOffset
+                childButton:SetPoint("TOPLEFT", self, "TOPLEFT", childButton.xOffset, childButton.yOffset)
+            end
+        end
+    end
+
+
 end
 
 -------------------- CREATE NEW VARIABLE FRAME --------------------
@@ -276,6 +317,9 @@ function SaveVariableFrameButton_OnClick(self)
     if variableButton.expanded then
         savedVariableButton:Show()
     end
+    UpdateButtonLocations(variablesFrame)
+    self:GetParent().variableNameEditBox:SetText("")
+    self:GetParent().variableValueEditBox:SetText("")
 
     -- TODO: Clear the edit box lines
 
