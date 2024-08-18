@@ -5,12 +5,16 @@ function GenerateSavedVariableParent(variableFrame, name)
     button.yOffset = -75
     button.name = name
 
-
     button:SetPoint("TOPLEFT", variableFrame, "TOPLEFT", button.xOffset, button.yOffset)
-    button:SetText("Saved Variables               +")
+    button:SetText(name.."               +")
     button:SetNormalFontObject("GameFontNormalCenter")
     button:SetHighlightFontObject("GameFontNormalCenter")
-    button:SetParentKey("savedVariablesButton")
+    if name == "Constant Variables" then
+        button:SetParentKey("constantVariablesButton")
+    else
+        button:SetParentKey("dynamicVariablesButton")
+    end
+    
     button:SetScript("OnClick", function(self)
         SavedVariablesFrameButton_OnClick(self)
     end)
@@ -31,6 +35,7 @@ function GenerateSavedVariableParent(variableFrame, name)
         insets = { left = 4, right = 4, top = 4, bottom = 4 },
     })
     buttonBackdrop:SetBackdropColor(0, 0, 0, 0.2)
+    button.buttonBackdrop = buttonBackdrop
 
     -- get all the saved variables and add them
     for savedName, info in pairs(SavedVariableParents[name]) do
@@ -47,7 +52,6 @@ function GenerateSavedVariable(variableButton, name, value, description)
     -- TODO: if name is empty then return
     -- if name already exists then consider this being a change in the existing button
     -- so just change what we need and return the existing button
-    -- TODO: Tooltip display
     local height = 0
     local width = 0
     local variablesFrame = variableButton:GetParent()
@@ -77,11 +81,7 @@ function GenerateSavedVariable(variableButton, name, value, description)
 
     -- Simple tooltip for the button
     savedVariableButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(name)
-        GameTooltip:AddLine("Value: " .. value, 1, 1, 1)
-        if description then GameTooltip:AddLine(description, 1, 1, 1) end
-        GameTooltip:Show()
+        SavedVariable_OnEnter(self, savedVariableButton)
     end)
 
     savedVariableButton:SetScript("OnLeave", function(self)
@@ -91,10 +91,28 @@ function GenerateSavedVariable(variableButton, name, value, description)
     return savedVariableButton
 end
 
-function GenerateNewSavedVariable(variableButton, name, value, description)
+function GenerateNewConstantVariable(variableButton, name, value, description)
     local savedVariableButton = GenerateSavedVariable(variableButton, name, value, description)
     SavedVariableParents[variableButton.name][name] = {value, description}
     return savedVariableButton
+end
+
+function SavedVariable_OnEnter(self, savedVariableButton)
+    -- basic tooltip setup
+
+    -- for prototyping, this will be where we update the dynamic variables
+    -- long term will have a much cleaner implementation
+    if savedVariableButton.name == "My HP" then
+        savedVariableButton.value = UnitHealth("player")
+    elseif savedVariableButton.name == "Target HP" then
+        savedVariableButton.value = UnitHealth("target")
+    end
+
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(savedVariableButton.name)
+    GameTooltip:AddLine("Value: " .. savedVariableButton.value, 1, 1, 1)
+    if savedVariableButton.description then GameTooltip:AddLine(savedVariableButton.description, 1, 1, 1) end
+    GameTooltip:Show()
 end
 
 -------------------- SAVED VARIABLES FRAME --------------------
@@ -121,7 +139,14 @@ function WoWCalcVariableFrame_OnLoad(self)
     createsavedVariableButton:SetScript("OnClick", function(self)
         CreateSavedVariableButton_OnClick(self)
     end)
+end
 
+function WoWCalcVariableFrame_OnShow(self)
+    print(self.dynamicVariablesButton:GetName())
+    -- here lets create two dynamic variables
+    -- this is not the long term solution, more of a showcase on dynamic variables
+    local dynamic1 = GenerateSavedVariable(self.dynamicVariablesButton, "My HP", UnitHealth("player"), "My character's current health")
+    local dynamic2 = GenerateSavedVariable(self.dynamicVariablesButton, "Target HP", UnitHealth("target"), "Health of the current target")
 end
 
 function CreateSavedVariableButton_OnClick(self)
@@ -278,6 +303,7 @@ function UpdateButtonLocations(self)
         yOffset = yOffset - parentButton:GetHeight()
         parentButton.yOffset = yOffset
         parentButton:SetPoint("TOPLEFT", self, "TOPLEFT", parentButton.xOffset, parentButton.yOffset)
+        parentButton.buttonBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", parentButton.xOffset, parentButton.yOffset)
         if parentButton.expanded then
             for childName, childButton in pairs(parentButton.savedVariables) do
                 yOffset = yOffset - childButton:GetHeight()
@@ -332,8 +358,8 @@ function SaveVariableFrameButton_OnClick(self)
     local value = self:GetParent().variableValueEditBox:GetText()
     local description = self:GetParent().variableDescriptionEditBox:GetText()
     local variablesFrame = self:GetParent():GetParent().variableFrame
-    local variableButton = variablesFrame.savedVariablesButton
-    local savedVariableButton = GenerateNewSavedVariable(variableButton, name, value, description)
+    local variableButton = variablesFrame.constantVariablesButton
+    local savedVariableButton = GenerateNewConstantVariable(variableButton, name, value, description)
 
     if variableButton.expanded then
         savedVariableButton:Show()

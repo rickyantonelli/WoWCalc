@@ -282,6 +282,9 @@
             <OnLoad>                
                 WoWCalcVariableFrame_OnLoad(self);
             </OnLoad>
+            <OnShow>
+                WoWCalcVariableFrame_OnShow(self)
+            </OnShow>
         </Scripts>
     </Frame>
 </Ui>

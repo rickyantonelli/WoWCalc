@@ -61,22 +61,23 @@ function OnEvent(self, event, arg1)
         else
             LoadButtons(self.variableFrame)
         end
-        
+        UpdateButtonLocations(self.variableFrame)
         
     end
 end
 
 function LoadButtons(self)
     -- loads the saved variable parents, whose tables contain the actual saved variables
-    if SavedVariableParents["SavedVariablesButton"] == nil then
-        SavedVariableParents["SavedVariablesButton"] = {}
-        print("adding to saved table")
-    else
-        print("already there")
+    if SavedVariableParents["Constant Variables"] == nil then
+        SavedVariableParents["Constant Variables"] = {}
     end
-    -- SavedVariableParents["SavedVariablesButton"] = {}
+    if SavedVariableParents["Dynamic Variables"] == nil then
+        SavedVariableParents["Dynamic Variables"] = {}
+    end
+    -- SavedVariableParents["ConstantVariables"] = {}
     
-    local button = GenerateSavedVariableParent(self, "SavedVariablesButton")
+    local button2 = GenerateSavedVariableParent(self, "Dynamic Variables")
+    local button = GenerateSavedVariableParent(self, "Constant Variables")
 end
 
 -------------------- CALCULATOR FRAME --------------------
