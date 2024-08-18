@@ -33,15 +33,17 @@ function GenerateSavedVariableParent(variableFrame, name)
     buttonBackdrop:SetBackdropColor(0, 0, 0, 0.2)
 
     -- get all the saved variables and add them
-    for savedName, value in pairs(SavedVariableParents[name]) do
-        local savedVariable = GenerateSavedVariable(button, savedName, value)
+    for savedName, info in pairs(SavedVariableParents[name]) do
+        local value = info[1]
+        local description = info[2]
+        local savedVariable = GenerateSavedVariable(button, savedName, value, description)
     end
 
     return button
 
 end
 
-function GenerateSavedVariable(variableButton, name, value)
+function GenerateSavedVariable(variableButton, name, value, description)
     -- TODO: if name is empty then return
     -- if name already exists then consider this being a change in the existing button
     -- so just change what we need and return the existing button
@@ -70,14 +72,28 @@ function GenerateSavedVariable(variableButton, name, value)
 
     savedVariableButton.name = name
     savedVariableButton.value = value
+    savedVariableButton.description = description
     variableButton.savedVariables[name] = savedVariableButton
+
+    -- Simple tooltip for the button
+    savedVariableButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(name)
+        GameTooltip:AddLine("Value: " .. value, 1, 1, 1)
+        if description then GameTooltip:AddLine(description, 1, 1, 1) end
+        GameTooltip:Show()
+    end)
+
+    savedVariableButton:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
 
     return savedVariableButton
 end
 
-function GenerateNewSavedVariable(variableButton, name, value)
-    local savedVariableButton = GenerateSavedVariable(variableButton, name, value)
-    SavedVariableParents[variableButton.name][name] = value
+function GenerateNewSavedVariable(variableButton, name, value, description)
+    local savedVariableButton = GenerateSavedVariable(variableButton, name, value, description)
+    SavedVariableParents[variableButton.name][name] = {value, description}
     return savedVariableButton
 end
 
@@ -286,6 +302,10 @@ function SaveVariableFrame_OnLoad(self)
     local valueLabel = self.variableValueEditBox:CreateFontString("$parentLabel", "OVERLAY", "GameFontNormal")
     valueLabel:SetPoint("LEFT", self.variableValueEditBox, "LEFT", -self.variableValueEditBox:GetWidth() - 50, 0)
     valueLabel:SetText("Enter variable value here:")
+
+    local descriptionLabel = self.variableDescriptionEditBox:CreateFontString("$parentLabel", "OVERLAY", "GameFontNormal")
+    descriptionLabel:SetPoint("LEFT", self.variableDescriptionEditBox, "LEFT", -self.variableDescriptionEditBox:GetWidth() - 50, 0)
+    descriptionLabel:SetText("Enter description here:")
 end
 
 function SaveVariableFrameButton_OnLoad(self)
@@ -310,9 +330,10 @@ function SaveVariableFrameButton_OnClick(self)
     -- TODO: variables currently do not save between sessions
     local name = self:GetParent().variableNameEditBox:GetText()
     local value = self:GetParent().variableValueEditBox:GetText()
+    local description = self:GetParent().variableDescriptionEditBox:GetText()
     local variablesFrame = self:GetParent():GetParent().variableFrame
     local variableButton = variablesFrame.savedVariablesButton
-    local savedVariableButton = GenerateNewSavedVariable(variableButton, name, value)
+    local savedVariableButton = GenerateNewSavedVariable(variableButton, name, value, description)
 
     if variableButton.expanded then
         savedVariableButton:Show()
@@ -320,16 +341,39 @@ function SaveVariableFrameButton_OnClick(self)
     UpdateButtonLocations(variablesFrame)
     self:GetParent().variableNameEditBox:SetText("")
     self:GetParent().variableValueEditBox:SetText("")
+    self:GetParent().variableDescriptionEditBox:SetText("")
 
     -- TODO: Clear the edit box lines
 
 end
 
+-- TODO: no need for 3 functions doing the same thing only being differentiated by the frame calling it
 function SaveVariableFrameEditBoxName_OnKeyDown(self, key)
     if key == "TAB" then
         -- for convenience - pressing tab will focus the next editBox
         self:GetParent().variableValueEditBox:SetFocus(true)
     end
+end
+
+function SaveVariableFrameEditBoxValue_OnKeyDown(self, key)
+    if key == "TAB" then
+        -- for convenience - pressing tab will focus the next editBox
+        self:GetParent().variableDescriptionEditBox:SetFocus(true)
+    end
+end
+
+function SaveVariableFrameEditBoxDescription_OnKeyDown(self, key)
+    if key == "TAB" then
+        -- for convenience - pressing tab will focus the next editBox
+        self:GetParent().variableNameEditBox:SetFocus(true)
+    end
+end
+
+function SaveVariableFrame_OnShow(self)
+    -- reset all the edit boxes
+    self.variableNameEditBox:SetText("")
+    self.variableValueEditBox:SetText("")
+    self.variableDescriptionEditBox:SetText("")
 end
 
 -- for later, when we have multiple variable buttons

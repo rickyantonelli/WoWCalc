@@ -199,8 +199,31 @@
                     <Anchor point="TOP"
                             relativePoint="TOP"
                             x="75"
-                            y="-100" />
+                            y="-80" />
                 </Anchors>
+                <Scripts>
+                    <OnKeyDown>                        
+                        SaveVariableFrameEditBoxValue_OnKeyDown(self, key);
+                    </OnKeyDown>
+                </Scripts>
+            </EditBox>
+            <EditBox name="$parentEditBoxValue"
+                     parentKey="variableDescriptionEditBox"
+                     inherits="InputBoxTemplate"
+                     autoFocus="false">
+                <Size x="110"
+                      y="5" />
+                <Anchors>
+                    <Anchor point="TOP"
+                            relativePoint="TOP"
+                            x="75"
+                            y="-110" />
+                </Anchors>
+                <Scripts>
+                    <OnKeyDown>                        
+                        SaveVariableFrameEditBoxDescription_OnKeyDown(self, key);
+                    </OnKeyDown>
+                </Scripts>
             </EditBox>
             <Button name="$parentButton"
                     parentKey="saveVariable"
@@ -213,7 +236,7 @@
                     <Anchor point="TOP"
                             relativePoint="TOP"
                             x="75"
-                            y="-125" />
+                            y="-140" />
                 </Anchors>
                 <Scripts>
                     <OnLoad>                        
@@ -236,6 +259,9 @@
             <OnLoad>
                 SaveVariableFrame_OnLoad(self);
             </OnLoad>
+            <OnShow>
+                SaveVariableFrame_OnShow(self);
+            </OnShow>
         </Scripts>
     </Frame>
     <!-- Saved variables frame -->
