@@ -314,8 +314,7 @@ end
 
 function FormatEditBox(number)
     -- adding some light formatting to the edit box
-    -- having this will also allow us to give the user freedom
-    -- to format as they like 
+    -- having this will also allow us to give the user freedom to format as they like 
     local formattedNumber = string.format("%.5f", number)
     formattedNumber = formattedNumber:gsub("0+$", "") -- Remove trailing zeros
     formattedNumber = formattedNumber:gsub("%.$", "") -- Remove trailing decimal point if no decimals
@@ -332,6 +331,30 @@ function WoWCalcButtonClear_OnClick(self)
     editBox.lastOperator = "+"
     editBox.currentText = 0
     editBox:SetText(FormatEditBox(0))
+end
+
+function WoWCalcSaveButton_OnShow(self)
+    self:SetNormalFontObject("GameFontNormal")
+    self:SetHighlightFontObject("GameFontNormal")
+    self:SetText("SAVE")
+    self:SetScript("OnClick", function(self)
+        WoWCalcSaveButton_OnClick(self)
+    end)
+end
+
+function WoWCalcSaveButton_OnClick(self)
+    local editBoxValue = tonumber(self:GetParent().editBox:GetText())
+    local createvariableFrame = self:GetParent():GetParent().saveVariableFrame
+    -- if createvariableFrame then
+    --     createvariableFrame:Show()
+    --     createvariableFrame.variableNameEditBox:SetText(editBoxValue)
+    --     createvariableFrame.variableNameEditBox:SetFocus(true)
+    -- end
+    createvariableFrame:Show()
+    createvariableFrame.variableValueEditBox:SetText(editBoxValue)
+    createvariableFrame.variableNameEditBox:SetFocus(true)
+
+
 end
 
 -------------------- SLASH COMMANDS --------------------

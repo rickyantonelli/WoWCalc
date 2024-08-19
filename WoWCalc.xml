@@ -19,7 +19,7 @@
                           y="20" />
         </Size>
         <Scripts>
-            <OnLoad>
+            <OnLoad>                
                 self:RegisterForClicks("AnyUp")
             </OnLoad>
             <OnUpdate>                
@@ -31,7 +31,7 @@
             <OnMouseUp>                
                 SavedVariableButton_OnDragStop(self, button);
             </OnMouseUp>
-            <OnClick>
+            <OnClick>                
                 SavedVariableButton_OnClick(self, button);
             </OnClick>
         </Scripts>
@@ -110,12 +110,12 @@
                      parentKey="editBox"
                      inherits="InputBoxTemplate"
                      autoFocus="false">
-                <Size x="110"
+                <Size x="125"
                       y="5" />
                 <Anchors>
                     <Anchor point="TOPLEFT"
                             relativePoint="TOPLEFT"
-                            x="55"
+                            x="17"
                             y="-30" />
                 </Anchors>
                 <FontString inherits="GameFontHighlightLarge" />
@@ -128,6 +128,21 @@
                     </OnKeyDown>
                 </Scripts>
             </EditBox>
+            <Button name="WoWCalcSaveButton" parentKey="saveButton" inherits="UIPanelButtonTemplate">
+                <Size x="45"
+                      y="30" />
+                <Anchors>
+                    <Anchor point="TOPLEFT"
+                            relativePoint="TOPLEFT"
+                            x="146"
+                            y="-18" />
+                </Anchors>
+                <Scripts>
+                    <OnShow>
+                        WoWCalcSaveButton_OnShow(self);
+                    </OnShow>
+                </Scripts>
+            </Button>
         </Frames>
         <Scripts>
             <OnLoad>                
@@ -256,10 +271,10 @@
             </Button>
         </Frames>
         <Scripts>
-            <OnLoad>
+            <OnLoad>                
                 SaveVariableFrame_OnLoad(self);
             </OnLoad>
-            <OnShow>
+            <OnShow>                
                 SaveVariableFrame_OnShow(self);
             </OnShow>
         </Scripts>
@@ -282,7 +297,7 @@
             <OnLoad>                
                 WoWCalcVariableFrame_OnLoad(self);
             </OnLoad>
-            <OnShow>
+            <OnShow>                
                 WoWCalcVariableFrame_OnShow(self)
             </OnShow>
         </Scripts>

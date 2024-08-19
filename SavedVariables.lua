@@ -110,9 +110,29 @@ function SavedVariable_OnEnter(self, savedVariableButton)
 
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:SetText(savedVariableButton.name)
-    GameTooltip:AddLine("Value: " .. savedVariableButton.value, 1, 1, 1)
+    GameTooltip:AddLine("Value: " .. FormatToolTipValue(savedVariableButton.value), 1, 1, 1)
     if savedVariableButton.description then GameTooltip:AddLine(savedVariableButton.description, 1, 1, 1) end
     GameTooltip:Show()
+end
+
+function FormatToolTipValue(value)
+    if (type(value) == "string") then
+        value = tonumber(value)
+    end
+    if value < 10 then
+        return string.format("%.2f", value)
+    elseif value < 1000 then
+        return string.format("%.1f", value)
+    else
+        -- Over 1000, so format with commas
+        local formattedValue = string.format("%d", value)
+        local k
+        while true do
+            formattedValue, k = string.gsub(formattedValue, "^(-?%d+)(%d%d%d)", '%1,%2')
+            if k == 0 then break end
+        end
+        return formattedValue
+    end
 end
 
 -------------------- SAVED VARIABLES FRAME --------------------
@@ -142,7 +162,6 @@ function WoWCalcVariableFrame_OnLoad(self)
 end
 
 function WoWCalcVariableFrame_OnShow(self)
-    print(self.dynamicVariablesButton:GetName())
     -- here lets create two dynamic variables
     -- this is not the long term solution, more of a showcase on dynamic variables
     local dynamic1 = GenerateSavedVariable(self.dynamicVariablesButton, "My HP", UnitHealth("player"), "My character's current health")
@@ -290,7 +309,6 @@ function DeleteSavedVariable(self)
 end
 
 function UpdateButtonLocations(self)
-    
     -- first, need to loop through all the parent vars
     -- in those parent vars, loop through all children
     -- check expanded to see if we need to loop through the children though
@@ -355,7 +373,7 @@ function SaveVariableFrameButton_OnClick(self)
     -- oh it's because we are naming it the same thing, we should stop that from happening
     -- TODO: variables currently do not save between sessions
     local name = self:GetParent().variableNameEditBox:GetText()
-    local value = self:GetParent().variableValueEditBox:GetText()
+    local value = tonumber(self:GetParent().variableValueEditBox:GetText())
     local description = self:GetParent().variableDescriptionEditBox:GetText()
     local variablesFrame = self:GetParent():GetParent().variableFrame
     local variableButton = variablesFrame.constantVariablesButton
