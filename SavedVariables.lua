@@ -49,7 +49,23 @@ function GenerateSavedVariableParent(variableFrame, name)
 end
 
 function GenerateSavedVariable(variableButton, name, value, description)
-    -- TODO: if name is empty then return
+    if name == "" then
+        return
+    end
+    for savedVariableName, savedVariableButton in pairs(variableButton.savedVariables) do
+        -- check if the name is already in savedVariables
+        -- if so we are treating this as an update rather than a new button
+        if savedVariableName == name then
+            print("Updating " .. name)
+            -- we are just updating the button with new info
+            savedVariableButton.value = value
+            savedVariableButton.description = description
+            -- also need to update the SavedVariableParents table, which will allow this to persist between sessions
+            SavedVariableParents[variableButton.name][name] = {value, description}
+        end
+    end
+
+
     -- if name already exists then consider this being a change in the existing button
     -- so just change what we need and return the existing button
     local height = 0
@@ -93,8 +109,12 @@ end
 
 function GenerateNewConstantVariable(variableButton, name, value, description)
     local savedVariableButton = GenerateSavedVariable(variableButton, name, value, description)
-    SavedVariableParents[variableButton.name][name] = {value, description}
-    return savedVariableButton
+    if savedVariableButton then
+        SavedVariableParents[variableButton.name][name] = {value, description}
+        return savedVariableButton
+    else
+        print("Variable name cannot be empty!")
+    end
 end
 
 function SavedVariable_OnEnter(self, savedVariableButton)
